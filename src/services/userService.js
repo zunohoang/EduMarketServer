@@ -57,6 +57,8 @@ class UserService {
         try {
             const user = User.deleteOne({ username });
             return user;
+        } catch (error) {
+            throw error;
         }
     }
 }
