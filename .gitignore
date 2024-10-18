@@ -1,0 +1,35 @@
+# Loại bỏ thư mục node_modules
+node_modules/
+
+# Loại bỏ file tạm và cache
+*.log
+*.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Loại bỏ các file môi trường nhạy cảm
+.env
+.env.local
+.env.*.local
+
+# Loại bỏ file cấu hình IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Loại bỏ file tạm khi sử dụng PM2 (nếu có)
+.pids
+
+# Loại bỏ file tạm khi build
+dist/
+build/
+
+# Loại bỏ file lock của hệ thống
+.DS_Store
+
+# Loại bỏ file log
+logs/
+*.log
+npm-debug.log*
