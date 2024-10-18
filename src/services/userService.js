@@ -1,4 +1,4 @@
-const User = require('../models/UserModel');
+const User = require('../models/User');
 const JwtService = require('./jwtService');
 
 class UserService {
@@ -35,7 +35,7 @@ class UserService {
             if (!user) {
                 throw new Error('User not found');
             }
-            const token = JwtService.genarateToken({ username, role: user.role });
+            const token = JwtService.genarateToken({ username, role: user.role, fullName: user.fullName, email: user.email, id: user._id });
             return token;
         } catch (error) {
             throw error;

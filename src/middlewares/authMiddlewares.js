@@ -1,4 +1,5 @@
 const jwt = require('../services/jwtService');
+const User = require('../models/User');
 
 class Auth {
     // Singleton instance
@@ -29,6 +30,7 @@ class Auth {
 
             // Kiểm tra user.role có ít nhất một quyền phù hợp với requiredAttributes
             if (requiredAttributes.some(attr => user.role.includes(attr))) {
+                req.user = user;
                 return next();
             } else {
                 return res.status(403).json({ status: false, message: 'Forbidden' });

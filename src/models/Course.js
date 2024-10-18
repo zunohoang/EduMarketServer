@@ -12,12 +12,13 @@ const courseModel = new mongoose.Schema({
     lessons: [{
         title: { type: String },
         description: { type: String },
+        image: { type: String },
         part: { type: Number },
-        video: { type: mongoose.Schema.Types.ObjectId, ref: 'Video' },
+        videoUrl: { type: String },
         duration: { type: Number },
         isFree: { type: Boolean },
         isPublished: { type: Boolean },
-        publishedAt: { type: Date },
+        publishhedAt: { type: Date },
         publishedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     }],
     dateCreated: { type: Date, default: Date.now },
@@ -27,5 +28,5 @@ const courseModel = new mongoose.Schema({
     publishedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 });
 
-const course = mongoose.model('Course', courseModel);
-module.exports = course;
+const Course = mongoose.model('Course', courseModel);
+module.exports = Course;

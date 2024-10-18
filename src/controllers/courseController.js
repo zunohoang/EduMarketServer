@@ -1,4 +1,4 @@
-const Course = require("../models/CourseModel");
+const Course = require("../models/Course");
 const HTTP = require('../configs/httpStatusConfig');
 const courseSevice = require('../services/courseService');
 

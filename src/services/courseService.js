@@ -1,5 +1,6 @@
-const Course = require('../models/CourseModel');
+const Course = require('../models/Course');
 const HTTP = require('../configs/httpStatusConfig');
+const mongoose = require('mongoose');
 
 class CourseService {
 
@@ -30,7 +31,7 @@ class CourseService {
                 title: data.title,
                 description: data.description,
                 price: data.price,
-                instructor: userCreate.fullName,
+                instructor: userCreate.id,
                 category: data.category,
                 image: data.image,
                 rating: data.rating,
@@ -38,7 +39,7 @@ class CourseService {
                 lessons: data.lessons,
                 isPublished: data.isPublished,
                 publishedAt: data.publishedAt,
-                publishedBy: data.publishedBy,
+                publishedBy: data.isPublished ? userCreate.id : null,
             });
             course.save();
             return course;
@@ -56,7 +57,7 @@ class CourseService {
             }
             course.isPublished = true;
             course.publishedAt = new Date();
-            course.publishedBy = userPublish.fullName;
+            course.publishedBy = userPublish.id;
             course.save();
             return course;
         } catch (error) {

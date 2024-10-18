@@ -1,4 +1,4 @@
-const User = require('../models/UserModel');
+const User = require('../models/User');
 const userService = require('../services/userService');
 const HTTP = require('../configs/httpStatusConfig');
 
