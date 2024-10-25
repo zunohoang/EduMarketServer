@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 const connectDB = async () => {
     try {
-        const dbURI = 'mongodb://127.0.0.1:27017/edu_market';
+        const dbURI = process.env.DB_URL;
         await mongoose.connect(dbURI); // Loại bỏ useNewUrlParser và useUnifiedTopology
         console.log('Connected to MongoDB');
     } catch (error) {

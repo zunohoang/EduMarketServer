@@ -93,7 +93,7 @@ class CourseService {
     }
 
     // add lesson to course
-    async addLesson(id, lesson) {
+    async createLesson(id, lesson) {
         try {
             const course = await Course.findById(id);
             if (!course) {

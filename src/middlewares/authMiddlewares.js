@@ -23,10 +23,14 @@ class Auth {
     }
 
     // Kiểm tra xem người dùng có thuộc tính này không
-    hasAttributes(req, res, next, requiredAttributes) {
+    async hasAttributes(req, res, next, requiredAttributes) {
         try {
             const token = req.headers['authorization'].split(' ')[1];
-            const user = jwt.verifyToken(token);
+            const user_token = jwt.verifyToken(token);
+
+            const user = await User.findOne({ username: user_token.username });
+
+            console.log(user);
 
             // Kiểm tra user.role có ít nhất một quyền phù hợp với requiredAttributes
             if (requiredAttributes.some(attr => user.role.includes(attr))) {

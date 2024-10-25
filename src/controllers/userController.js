@@ -19,7 +19,7 @@ class UserController {
         try {
             const data = req.body;
             // kiem tra xem cos username passsword, email, name k
-            if (!data.username || !data.password || !data.email || !data.name) {
+            if (!data.username || !data.password || !data.email || !data.fullName) {
                 throw new Error('Missing fields');
             }
             const user = await userService.createUser(data);
@@ -76,6 +76,40 @@ class UserController {
         }
     }
 
+    // doi role cho user
+    async changeRole(req, res) {
+        try {
+            const { role, username } = req.body;
+            const user = await userService.changeRole(username, role);
+            res.json(user);
+        } catch (error) {
+            res.status(500).json(error.message);
+        }
+    }
+
+    // doi password
+    async changePassword(req, res) {
+        try {
+            const { password } = req.body;
+            const username = req.user.username;
+            const user = await userService.changePassword(username, password);
+            res.json(user);
+        } catch (error) {
+            res.status(500).json(error.message);
+        }
+    }
+
+    // find user with field
+    async findUser(req, res) {
+        try {
+            // get field
+            const fields = req.query;
+            const user = await userService.findUser(fields);
+            res.json(user);
+        } catch (error) {
+            res.status(500).json(error.message);
+        }
+    }
 }
 
 module.exports = new UserController();
