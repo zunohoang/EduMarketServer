@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'secretdvdsvds-wf9ef09--90i90u';
 
-class JwtService {
+class JwtServiceImpl extends JwtService {
     // gen token
     genarateToken(data) {
         return jwt.sign(data, JWT_SECRET, { expiresIn: '7d' });
@@ -28,4 +28,4 @@ class JwtService {
     }
 }
 
-module.exports = new JwtService();
+module.exports = new JwtServiceImpl();

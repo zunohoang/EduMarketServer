@@ -1,5 +1,5 @@
-const jwt = require('../services/jwtService');
-const User = require('../models/User');
+const jwt = require('../services/jwt.service');
+const User = require('../models/user.model');
 
 class Auth {
     // Singleton instance
