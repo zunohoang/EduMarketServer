@@ -1,32 +1,81 @@
+const User = require("../models/user.model");
 
 class UserService {
-    getAllUsers() {
-        throw new Error("Method 'getAllUsers()' must be implemented.");
+    constructor() {
+        this.User = User;
     }
 
-    createUser(data) {
-        throw new Error("Method 'createUser()' must be implemented.");
+    async getUsers() {
+        return await this.User.find();
     }
 
-    updateUser(data) {
-        throw new Error("Method 'updateUser()' must be implemented.");
+    async createUser(data) {
+        return await this.User.create(data);
     }
 
-    deleteUser(data) {
-        throw new Error("Method 'deleteUser()' must be implemented");
+    async updateUser(data) {
+        const updateData = {};
+        for (const key in data) {
+            if (data[key] !== null && data[key] !== undefined) {
+                updateData[key] = data[key];
+            }
+        }
+        return await this.User.findByIdAndUpdate(data.id, updateData, { new: true });
     }
 
-    getUserById(data) {
-        throw new Error("Method 'getUserById()' must be implemented.");
+    async deleteUser(id) {
+        return await this.User.findByIdAndDelete(id);
     }
 
-    getUserByEmail(data) {
-        throw new Error("Method 'getUserByEmail()' must be implemented.");
+    async getUserById(data) {
+        return await this.User.findById(data.id);
     }
 
-    getUserByUsername(data) {
-        throw new Error("Method 'getUserByPhone()' must be implemented.");
+    async getUserByEmail(data) {
+        return await this.User.findOne({ email: data.email });
+    }
+
+    async getUserByUsername(data) {
+        return await this.User.findOne({ username: data.username });
+    }
+
+    async getInstructor() {
+        return await this.User.find({ role: { $in: ["TEACHER"] } });
+    }
+
+    async getTeachers() {
+        return await this.User.aggregate([
+            {
+                $match: { role: "TEACHER" }
+            },
+            {
+                $lookup: {
+                    from: "courses",            // Tên collection chứa các khóa học
+                    localField: "_id",          // id của User
+                    foreignField: "instructor", // trường instructor trong Course
+                    as: "courseManagement"      // tên trường mới để lưu danh sách khóa học
+                }
+            },
+            {
+                $project: {
+                    "courseManagement.sections": 0,
+                    "password": 0
+                }
+            }
+        ]);
+    }
+
+    async getUsersByRole(role) {
+        return await this.User.find({ role }).populate({
+            path: 'coursesJoined',
+            select: '-sections',
+            populate: {
+                path: 'instructor',
+                select: 'fullName _id email'
+            }
+        })
+            .select('-password');
     }
 }
 
-module.exports = UserService;
+module.exports = new UserService();

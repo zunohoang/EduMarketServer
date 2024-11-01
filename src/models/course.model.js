@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const courseSchema = new mongoose.Schema({
-    title: {
+    name: {
         type: String,
         required: true,
     },
@@ -9,11 +9,23 @@ const courseSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    price: {
-        type: Number,
+    student: {
+        type: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+            }
+        ]
+    },
+    status: {
+        type: Boolean,
         required: true,
     },
-    author: {
+    fee: {
+        type: String,
+        required: true,
+    },
+    instructor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
@@ -22,39 +34,36 @@ const courseSchema = new mongoose.Schema({
         type: Array,
         required: true,
     },
+    image: {
+        type: String,
+        required: true,
+    },
     sections: {
         type: [
             {
                 title: {
                     type: String,
-                    required: true,
                 },
                 lessons: {
                     type: [
                         {
                             title: {
                                 type: String,
-                                required: true,
                             },
                             url: {
                                 type: String,
-                                required: true,
                             },
-                            discription: {
+                            description: {
                                 type: String,
-                                required: true,
                             },
-                            time: {
-                                type: Number,
-                                required: true,
+                            document: {
+                                type: String,
                             },
                         },
                     ],
-                    required: true,
                 },
             },
         ],
-        required: true,
     },
 });
 

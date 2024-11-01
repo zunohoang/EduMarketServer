@@ -1,13 +1,31 @@
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = 'secretdvdsvds-wf9ef09--90i90u';
 
 class JwtService {
+    // gen token
+    genarateToken(data) {
+        return jwt.sign(data, JWT_SECRET, { expiresIn: '7d' });
+    }
 
-    genarateToken(data) { }
+    // verify token
+    verifyToken(token) {
+        return jwt.verify(token, JWT_SECRET);
+    }
 
-    verifyToken(token) { }
+    // decode token
+    decodeToken(token) {
+        return jwt.decode(token);
+    }
 
-    decodeToken(token) { }
-
-    getTokenFromHeader(req) { }
+    // get token from header
+    getTokenFromHeader(req) {
+        const token = req.headers['authorization'];
+        if (!token) {
+            return null;
+        }
+        return token.replace('Bearer ', '');
+    }
 }
 
-module.exports = JwtService;
+module.exports = new JwtService();
