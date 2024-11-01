@@ -5,22 +5,24 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    age: {
+    avt: {
+        type: String,
+    },
+    born: {
         type: Number,
         required: true,
     },
-    username: {
+    description: {
+        type: String,
+    }
+    , username: {
         type: String,
         required: true,
         unique: true,
     },
     coursesJoined: {
         type: Array,
-        required: true,
-    },
-    courseAuthor: {
-        type: Array,
-        required: true,
+        ref: 'Course',
     },
     email: {
         type: String,

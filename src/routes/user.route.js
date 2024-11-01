@@ -1,15 +1,14 @@
 const express = require('express');
-const userController = require('../controllers/userController');
 const router = express.Router();
-const auth = require('../middlewares/authMiddlewares');
+const userController = require('../controllers/user.controller');
 
-router.get('/', auth.authorize(['ADMIN', 'TEACHER']), userController.getAllUsers);
-router.post('/login', userController.login);
+router.post('/teacher', userController.createTeacher);
+router.get('/teachers', userController.getTeachers);
+router.get('/instructor', userController.getInstructor);
+router.get('/', userController.getUsers);
+router.get('/:id', userController.getUserById);
 router.post('/', userController.createUser);
-router.put('/', auth.authorize(['STUDENT', 'ADMIN', 'TEACHER']), userController.updateUser);
-router.delete('/', auth.authorize(['ADMIN']), userController.deleteUser);
-router.put('/change-role', auth.authorize(['ADMIN']), userController.changeRole);
-router.put('/change-password', auth.authorize(['STUDENT', 'ADMIN', 'TEACHER']), userController.changePassword);
-router.get('/search', userController.findUser);
+router.put('/:id', userController.updateUser);
+router.delete('/:id', userController.deleteUser);
 
 module.exports = router;

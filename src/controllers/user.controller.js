@@ -1,11 +1,16 @@
+const userService = require("../services/user.service");
 const UserService = require("../services/user.service");
+const createMulter = require('../configs/multerConfig');
+const multer = createMulter('public/teachers');
+const uploadCourse = multer.single('file');
+const jwtService = require('../services/jwt.service');
 
 class UserController {
 
-    async register(req, res) {
+    async createUser(req, res) {
         try {
             const { username, fullName, image, phone, address, age, email, password } = req.body;
-            const user = await UserService.createUser({ username, fullName, image, phone, address, age, email, password });
+            const user = await UserService.createUser({ username, fullName, image, phone, address, age, email, password, role: "STUDENT" });
             if (user) {
                 res.status(201).json({ status: true, message: 'User created successfully' });
             } else {
@@ -19,7 +24,7 @@ class UserController {
     async login(req, res) {
         try {
             const { email, username, password } = req.body;
-            const user = null;
+            let user = null;
             if (email) {
                 user = await UserService.getUserByEmail({ email });
             }
@@ -28,7 +33,11 @@ class UserController {
             }
             if (user) {
                 if (user.password === password) {
-                    res.status(200).json({ status: true, message: 'Login successfully' });
+                    user.password = undefined;
+                    user.coursesJoined = undefined;
+                    console.log("USER LOGIN ", user.fullName);
+                    const accesstoken = jwtService.genarateToken({ user });
+                    res.status(200).json({ status: true, data: { user, accesstoken } });
                 } else {
                     res.status(400).json({ status: false, message: 'Password is incorrect' });
                 }
@@ -40,7 +49,7 @@ class UserController {
         }
     }
 
-    async getUser(req, res) {
+    async getUserById(req, res) {
         try {
             const { id } = req.params;
             const user = await UserService.getUserById({ id });
@@ -66,6 +75,108 @@ class UserController {
         } catch (error) {
             res.status(400).json({ status: false, message: error.message });
         }
+    }
+
+    async getUsers(req, res) {
+        try {
+            let users = null;
+            if (req.query.role) {
+                users = await UserService.getUsersByRole(req.query.role);
+            }
+            else users = await UserService.getUsers();
+            res.json({
+                status: true,
+                data: {
+                    users: users
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                message: error.message
+            })
+        }
+    }
+
+    async deleteUser(req, res) {
+        try {
+            const { id } = req.params;
+            const user = await UserService.deleteUser(id);
+            console.log(user);
+            if (!user) {
+                res.status(404).json({
+                    status: false,
+                    message: "khong tim thay nguoi dung"
+                });
+            } else {
+                res.json({
+                    status: true,
+                    data: {
+                        user
+                    }
+                })
+            }
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                message: error.message
+            })
+        }
+    }
+
+    async getInstructor(req, res) {
+        try {
+            const instructors = await UserService.getInstructor();
+
+            if (instructors) {
+                return res.json({
+                    status: true,
+                    data: {
+                        instructors
+                    }
+                })
+            }
+        } catch (error) {
+            return res.json("rrr");
+        }
+    }
+
+    async getTeachers(req, res) {
+        try {
+            const teachers = await UserService.getTeachers();
+            if (teachers) {
+                return res.json({
+                    status: true,
+                    data: {
+                        teachers
+                    }
+                })
+            }
+        } catch (error) {
+            return res.json("rrr");
+        }
+    }
+
+    async createTeacher(req, res) {
+        uploadCourse(req, res, async (err) => {
+            if (err) {
+                res.status(500).json({
+                    status: false,
+                    message: err.message
+                })
+            } else {
+                const teacher = JSON.parse(req.body.teacher);
+                console.log(teacher);
+                let { username, name, image, phone, address, born, email, password, description } = teacher;
+                if (req.file) image = req.file.path.replace('public', '');
+                const user = await UserService.createUser({ username, fullName: name, avt: image, phone, address, born, email, password, role: "TEACHER", description });
+                if (user) {
+                    res.status(201).json({ status: true, message: 'Teacher created successfully' });
+                } else {
+                    res.status(400).json({ status: false, message: 'Teacher creation failed' });
+                }
+            }
+        });
     }
 }
 
