@@ -9,8 +9,11 @@ class UserController {
 
     async createUser(req, res) {
         try {
-            const { username, fullName, image, phone, address, age, email, password } = req.body;
-            const user = await UserService.createUser({ username, fullName, image, phone, address, age, email, password, role: "STUDENT" });
+            let { username, name, image, phone, address, born, email, password, role } = req.body;
+            if (!role) {
+                role = "STUDENT";
+            }
+            const user = await UserService.createUser({ username, fullName: name, image, phone, address, born, email, password, role });
             if (user) {
                 res.status(201).json({ status: true, message: 'User created successfully' });
             } else {
@@ -177,6 +180,38 @@ class UserController {
                 }
             }
         });
+    }
+
+    async changeRole(req, res) {
+        try {
+            const id = req.params.id;
+            const role = req.body.role;
+
+            console.log("ID", id);
+            console.log("ROLE", role);
+
+            const user = await UserService.changeRole(id, role);
+
+            if (user) {
+                res.json({
+                    status: true,
+                    data: {
+                        user
+                    }
+                })
+            } else {
+                res.status(404).json({
+                    status: false,
+                    message: "Khong tim thay nguoi dung"
+                })
+            }
+
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                message: error.message
+            })
+        }
     }
 }
 

@@ -76,6 +76,14 @@ class UserService {
         })
             .select('-password');
     }
+
+    async changeRole(id, role) {
+        return await this.User.findByIdAndUpdate(id, { role }, { new: true });
+    }
+
+    async addCoursesToUser(userId, courses) {
+        return await this.User.findByIdAndUpdate(userId, { $push: { coursesJoined: { $each: courses } } }, { new: true });
+    }
 }
 
 module.exports = new UserService();
