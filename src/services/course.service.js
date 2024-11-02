@@ -1,4 +1,5 @@
 const Course = require('../models/course.model');
+const User = require('../models/user.model');
 
 class CourseService {
     constructor() {
@@ -30,6 +31,19 @@ class CourseService {
 
     async unpublicCourseById(id) {
         return await Course.findOneAndUpdate({ _id: id }, { status: false }, { new: true });
+    }
+
+    async addStudentToCourse(courseId, studentId) {
+        try {
+            const course = await Course.findByIdAndUpdate(courseId, { $push: { student: studentId } }, { new: true });
+            const user = await User.findByIdAndUpdate(studentId, { $push: { coursesJoined: courseId } }, { new: true });
+            if(!course || !user) {
+                return false;
+            }
+            return true;
+        } catch (error) {
+            throw error;
+        }
     }
 }
 
