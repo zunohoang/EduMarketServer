@@ -7,6 +7,18 @@ const accesskeySchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    title: {
+        type: String,
+        required: true,
+    },
+    bill: {
+        type: String,
+        required: true,
+    },
+    fee: {
+        type: String,
+        required: true,
+    },
     courses: [
         {
             type: mongoose.Schema.Types.ObjectId,
