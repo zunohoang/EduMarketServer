@@ -1,4 +1,7 @@
 const accessKeyService = require('../services/accesskey.service');
+const createMulter = require('../configs/multerConfig');
+const multer = createMulter('public/bills');
+const uploadBill = multer.single('file');
 
 class AccesskeyController {
 
@@ -18,19 +21,32 @@ class AccesskeyController {
     }
 
     async createAccesskey(req, res) {
-        try {
-            const accesskey = req.body;
-            const newAccesskey = await accessKeyService.createAccesskey(accesskey);
-            res.json({
-                status: true,
-                data: newAccesskey
-            })
-        } catch (error) {
-            res.status(500).json({
-                status: false,
-                message: error.message
-            })
-        }
+        uploadBill(req, res, async (err) => {
+            if (err) {
+                res.status(500).json({
+                    status: false,
+                    message: err.message
+                })
+            } else {
+                const accessKey = JSON.parse(req.body.accessKey);
+                if (req.file)
+                    accessKey.bill = req.file.path.replace('public', '');
+                try {
+                    console.log(accessKey);
+                    const newAccesskey = await accessKeyService.createAccesskey(accessKey);
+                    console.log(newAccesskey);
+                    res.json({
+                        status: true,
+                        data: newAccesskey
+                    })
+                } catch (error) {
+                    res.status(500).json({
+                        status: false,
+                        message: error.message
+                    })
+                }
+            }
+        })
     }
 
     async getAccesskeyById(req, res) {
