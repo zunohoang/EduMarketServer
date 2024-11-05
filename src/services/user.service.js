@@ -1,8 +1,10 @@
 const User = require("../models/user.model");
+const Course = require("../models/course.model");
 
 class UserService {
     constructor() {
         this.User = User;
+        this.Course = Course;
     }
 
     async getUsers() {
@@ -28,7 +30,12 @@ class UserService {
     }
 
     async getUserById(data) {
-        return await this.User.findById(data.id);
+        const user = await this.User.findById(data.id);
+        if (user.role == "TEACHER") {
+            const courses = await Course.find({ instructor: user._id });
+            user.courseManagement = courses;
+        }
+        return user;
     }
 
     async getUserByEmail(data) {
