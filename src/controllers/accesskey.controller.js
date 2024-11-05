@@ -32,7 +32,7 @@ class AccesskeyController {
                 if (req.file)
                     accessKey.bill = req.file.path.replace('public', '');
                 try {
-                    console.log(accessKey);
+                    console.log(newAccesskey);
                     const newAccesskey = await accessKeyService.createAccesskey(accessKey);
                     console.log(newAccesskey);
                     res.json({
