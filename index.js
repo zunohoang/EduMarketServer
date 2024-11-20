@@ -6,7 +6,7 @@ const port = 5000;
 const routerCus = require('./src/routes');
 const connectDB = require('./src/configs/db');
 const bodyParser = require('body-parser');
-const auth = require('./src/middlewares/authMiddlewares');
+const auth = require('./src/middlewares/auth.middleware');
 require('dotenv').config();
 
 

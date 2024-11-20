@@ -1,15 +1,14 @@
 const jwt = require('../services/jwt.service');
 const User = require('../models/user.model');
+const logger = require('../utils/logger');
 
 class Auth {
-    // Singleton instance
     static instance = new Auth();
 
     static getInstance() {
         return this.instance;
     }
 
-    // Biến static cho các attributes
     static attributes = new Set();
 
     constructor() {
@@ -17,22 +16,20 @@ class Auth {
         Auth.instance = this;
     }
 
-    // Thêm các thuộc tính vào Set để tránh trùng lặp
     addAttributes(attributes) {
         attributes.forEach(attr => Auth.attributes.add(attr));
     }
 
-    // Kiểm tra xem người dùng có thuộc tính này không
     async hasAttributes(req, res, next, requiredAttributes) {
         try {
             const token = req.headers['authorization'].split(' ')[1];
+            console.log(token);
             const user_token = jwt.verifyToken(token);
 
             const user = await User.findOne({ username: user_token.username });
 
-            console.log(user);
+            logger(this, `User ${user.username} is accessing`);
 
-            // Kiểm tra user.role có ít nhất một quyền phù hợp với requiredAttributes
             if (requiredAttributes.some(attr => user.role.includes(attr))) {
                 req.user = user;
                 return next();
@@ -44,7 +41,23 @@ class Auth {
         }
     }
 
-    // Middleware để kiểm tra quyền hạn trực tiếp
+    async setUserDetail(req, res, next) {
+        try {
+            const token = req.headers['authorization'].split(' ')[1];
+
+            if (!token) return next();
+            if (!jwt.verifyToken(token)) return next();
+
+            const user_token = jwt.verifyToken(token);
+            const user = await User.findOne({ username: user_token.username });
+            if (!user) return next();
+            req.user = user;
+            return next();
+        } catch (e) {
+            return next();
+        }
+    }
+
     authorize(roles) {
         return (req, res, next) => this.hasAttributes(req, res, next, roles);
     }

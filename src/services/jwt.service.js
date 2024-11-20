@@ -2,10 +2,16 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'secretdvdsvds-wf9ef09--90i90u';
 
+// no co accesstoken and refreshtoken
 class JwtService {
-    // gen token
-    genarateToken(data) {
-        return jwt.sign(data, JWT_SECRET, { expiresIn: '7d' });
+    // gen accestoken
+    genAccessToken(payload) {
+        return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+    }
+
+    // gen refreshtoken
+    genRefreshToken(payload) {
+        return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
     }
 
     // verify token

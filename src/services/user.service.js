@@ -30,10 +30,12 @@ class UserService {
     }
 
     async getUserById(data) {
-        const user = await this.User.findById(data.id);
-        if (user.role == "TEACHER") {
+        let user = {}
+        user = await this.User.findOne({ _id: data.id });
+        console.log(user);
+        if (user.role == 'TEACHER') {
             const courses = await Course.find({ instructor: user._id });
-            user.courseManagement = courses;
+            user = { ...user._doc, coursesManagement: courses };
         }
         return user;
     }

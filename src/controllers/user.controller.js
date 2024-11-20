@@ -39,7 +39,7 @@ class UserController {
                     user.password = undefined;
                     user.coursesJoined = undefined;
                     console.log("USER LOGIN ", user.fullName);
-                    const accesstoken = jwtService.genarateToken({ user });
+                    const accesstoken = jwtService.genAccessToken({ user });
                     res.status(200).json({ status: true, data: { user, accesstoken } });
                 } else {
                     res.status(400).json({ status: false, message: 'Password is incorrect' });
@@ -48,7 +48,7 @@ class UserController {
                 res.status(400).json({ status: false, message: 'User not found' });
             }
         } catch (error) {
-            res.status(400).json({ status: false, message: error.message });
+            res.status(500).json({ status: false, message: error.message });
         }
     }
 
@@ -206,6 +206,24 @@ class UserController {
                 })
             }
 
+        } catch (error) {
+            res.status(500).json({
+                status: false,
+                message: error.message
+            })
+        }
+    }
+
+    async getProfile(req, res) {
+        try {
+            const user = req.user;
+            await user.populate('coursesJoined');
+            res.json({
+                status: true,
+                data: {
+                    user
+                }
+            })
         } catch (error) {
             res.status(500).json({
                 status: false,

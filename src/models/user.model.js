@@ -19,8 +19,13 @@ const userSchema = new mongoose.Schema({
         unique: true,
     },
     coursesJoined: {
-        type: Array,
-        ref: 'Course',
+        type: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Course',
+            }
+        ],
+        default: [],
     },
     email: {
         type: String,
@@ -37,7 +42,10 @@ const userSchema = new mongoose.Schema({
     },
     address: {
         type: String,
-    }
+    },
+    refreshToken: {
+        type: String,
+    },
 });
 
 module.exports = mongoose.model('User', userSchema);
