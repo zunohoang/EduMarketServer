@@ -6,7 +6,7 @@ class CourseService {
     }
 
     async getCourses() {
-        return await Course.find().populate('instructor');
+        return await Course.find().populate('instructor').select('-sections.lessons.url');
     }
     async getCourseById(user, id) {
         if (user) {

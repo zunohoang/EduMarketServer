@@ -4,6 +4,7 @@ const createMulter = require('../configs/multerConfig');
 const multer = createMulter('public/courses');
 const uploadCourse = multer.single('file');
 const User = require('../models/user.model');
+const redisService = require('../services/redis.service');
 class CourseController {
 
     async getCourses(req, res) {
@@ -13,9 +14,17 @@ class CourseController {
             let courses = [];
             let teacherName = "";
             if (!teacherId) {
-                courses = await courseService.getCourses();
+                const cachedCourses = await redisService.get('courses::list');
+                if (cachedCourses) {
+                    console.log('Get courses from cache');
+                    courses = JSON.parse(cachedCourses);
+                } else {
+                    console.log('Get courses from db');
+                    courses = await Course.find().populate('instructor').select('-sections.lessons.url');
+                    await redisService.set('courses::list', JSON.stringify(courses));
+                }
             } else {
-                courses = await Course.find({ instructor: teacherId }).populate('instructor');
+                courses = await Course.find({ instructor: teacherId }).populate('instructor').select('-sections.lessons.url');
                 const teacher = await User.findById(teacherId);
                 teacherName = teacher.fullName;
             }
@@ -56,7 +65,7 @@ class CourseController {
                     course.image = req.file.path.replace('public', '');
                 try {
                     const courseDetail = await courseService.createCourse(course);
-
+                    await redisService.del('courses::list');
                     if (courseDetail) {
                         res.json({
                             status: true,
@@ -122,6 +131,7 @@ class CourseController {
         try {
             const { id } = req.params;
             const course = await courseService.deleteCourse(id);
+            await redisService.del('courses::list');
             if (course) {
                 res.json({
                     status: true,
@@ -157,7 +167,7 @@ class CourseController {
                     course.image = req.file.path.replace('public', '');
                 try {
                     const courseDetail = await courseService.updateCourse(course);
-
+                    await redisService.del('courses::list');
                     if (courseDetail) {
                         res.json({
                             status: true,
@@ -249,6 +259,7 @@ class CourseController {
             const student = await User.findById({ _id: studentId });
             student.coursesJoined = student.coursesJoined.filter(c => c != id);
             await student.save();
+            await redisService.del('courses::list');
             res.json({
                 status: true,
                 data: {
@@ -269,6 +280,7 @@ class CourseController {
             const course = await Course.findById(id);
             course.student.push(studentId);
             await course.save();
+            await redisService.del('courses::list');
             res.json({
                 status: true,
                 data: {
@@ -288,6 +300,7 @@ class CourseController {
             const { id } = req.params;
             console.log(id);
             const course = await courseService.publicCouseById(id);
+            await redisService.del('courses::list');
             if (course) {
                 res.json({
                     status: true,
@@ -313,6 +326,7 @@ class CourseController {
         try {
             const { id } = req.params;
             const course = await courseService.unpublicCourseById(id);
+            await redisService.del('courses::list');
             if (course) {
                 res.json({
                     status: true,
