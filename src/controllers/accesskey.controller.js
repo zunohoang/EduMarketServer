@@ -23,16 +23,17 @@ class AccesskeyController {
     async createAccesskey(req, res) {
         uploadBill(req, res, async (err) => {
             if (err) {
+                console.log(err)
                 res.status(500).json({
                     status: false,
                     message: err.message
                 })
             } else {
+                console.log("dsds")
                 const accessKey = JSON.parse(req.body.accessKey);
                 if (req.file)
                     accessKey.bill = req.file.path.replace('public', '');
                 try {
-                    console.log(newAccesskey);
                     const newAccesskey = await accessKeyService.createAccesskey(accessKey);
                     console.log(newAccesskey);
                     res.json({
@@ -40,6 +41,7 @@ class AccesskeyController {
                         data: newAccesskey
                     })
                 } catch (error) {
+                    console.log(error)
                     res.status(500).json({
                         status: false,
                         message: error.message

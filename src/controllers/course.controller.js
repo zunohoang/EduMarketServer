@@ -8,6 +8,7 @@ class CourseController {
 
     async getCourses(req, res) {
         try {
+
             const teacherId = req.query.teacherId;
             let courses = [];
             let teacherName = "";
@@ -42,6 +43,44 @@ class CourseController {
     }
 
     async createCourse(req, res) {
+        uploadCourse(req, res, async (err) => {
+            if (err) {
+                res.status(500).json({
+                    status: false,
+                    message: err.message
+                })
+            } else {
+                const course = JSON.parse(req.body.course);
+                console.log(course);
+                if (req.file)
+                    course.image = req.file.path.replace('public', '');
+                try {
+                    const courseDetail = await courseService.createCourse(course);
+
+                    if (courseDetail) {
+                        res.json({
+                            status: true,
+                            data: {
+                                course: courseDetail
+                            }
+                        })
+                    } else {
+                        res.status(500).json({
+                            status: false,
+                            message: "loi them vao"
+                        })
+                    }
+                } catch (error) {
+                    res.status(500).json({
+                        status: false,
+                        message: error.message
+                    })
+                }
+            }
+        });
+    }
+
+    async createCourseWithCloudinary(req, res) {
         uploadCourse(req, res, async (err) => {
             if (err) {
                 res.status(500).json({
@@ -145,7 +184,7 @@ class CourseController {
     async getCourseById(req, res) {
         try {
             const { id } = req.params;
-            const course = await courseService.getCourseById(id);
+            const course = await courseService.getCourseById(req.user, id);
             if (course) {
                 res.json({
                     status: true,
@@ -289,6 +328,33 @@ class CourseController {
             }
         } catch (error) {
             res.status(500).json({
+                status: false,
+                message: error
+            })
+        }
+    }
+
+    async getCourseOfUsername(req, res) {
+        try {
+
+            const { username } = req.params;
+            const user = await User.findOne({ username }).populate('coursesJoined');
+            if (user.coursesJoined) {
+                return res.json({
+                    status: true,
+                    data: {
+                        user: user
+                    }
+                })
+            } else {
+                return res.status(500).json({
+                    status: false,
+                    message: "loi"
+                })
+            }
+
+        } catch (error) {
+            return res.status(500).json({
                 status: false,
                 message: error
             })

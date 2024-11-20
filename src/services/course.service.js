@@ -8,8 +8,14 @@ class CourseService {
     async getCourses() {
         return await Course.find().populate('instructor');
     }
-    async getCourseById(id) {
-        return await Course.findById(id);
+    async getCourseById(user, id) {
+        if (user) {
+            console.log(user);
+            if (user.coursesJoined.includes(id) || user.role == 'ADMIN' || user.role == 'TEACHER' || user.role == 'COLLABORATOR') {
+                return await Course.findById(id).populate('instructor');
+            }
+        }
+        return await Course.findById(id).populate('instructor').select('-sections.lessons.url');
     }
     async createCourse(course) {
         return await Course.create(course);
@@ -37,7 +43,7 @@ class CourseService {
         try {
             const course = await Course.findByIdAndUpdate(courseId, { $push: { student: studentId } }, { new: true });
             const user = await User.findByIdAndUpdate(studentId, { $push: { coursesJoined: courseId } }, { new: true });
-            if(!course || !user) {
+            if (!course || !user) {
                 return false;
             }
             return true;
