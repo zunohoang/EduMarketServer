@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const redisService = require('../services/redis.service');
 require('dotenv').config();
 
 const connectDB = async () => {
@@ -7,6 +8,7 @@ const connectDB = async () => {
         console.log(dbURI);
         await mongoose.connect(dbURI); // Loại bỏ useNewUrlParser và useUnifiedTopology
         console.log('Connected to MongoDB');
+
     } catch (error) {
         console.error('Could not connect to MongoDB', error);
         process.exit(1);

@@ -4,6 +4,7 @@ const createMulter = require('../configs/multerConfig');
 const multer = createMulter('public/teachers');
 const uploadCourse = multer.single('file');
 const jwtService = require('../services/jwt.service');
+const redisService = require('../services/redis.service');
 
 class UserController {
 
@@ -146,7 +147,17 @@ class UserController {
 
     async getTeachers(req, res) {
         try {
+            const cachedCourses = await redisService.get("teachers::list");
+            if (cachedCourses) {
+                return res.json({
+                    status: true,
+                    data: {
+                        teachers: JSON.parse(cachedCourses)
+                    }
+                })
+            }
             const teachers = await UserService.getTeachers();
+            await redisService.set("teachers::list", JSON.stringify(teachers));
             if (teachers) {
                 return res.json({
                     status: true,
