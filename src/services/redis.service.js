@@ -32,7 +32,7 @@ class RedisService {
     // Lấy giá trị từ Redis
     async get(key) {
         try {
-            if (!this.client.connected) {
+            if (!this.client.isOpen) {
                 await this.connect();
             }
             const value = await this.client.get(key);
@@ -47,7 +47,7 @@ class RedisService {
     // Lưu giá trị vào Redis
     async set(key, value, ttl = null) {
         try {
-            if (!this.client.connected) {
+            if (!this.client.isOpen) {
                 await this.connect();
             }
             if (ttl === null) {
@@ -64,7 +64,7 @@ class RedisService {
     // Xóa giá trị khỏi Redis
     async del(key) {
         try {
-            if (!this.client.connected) {
+            if (!this.client.isOpen) {
                 await this.connect();
             }
             await this.client.del(key);
