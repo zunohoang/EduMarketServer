@@ -2,7 +2,16 @@ const Course = require('../models/course.model');
 const User = require('../models/user.model');
 
 class CourseService {
+
+    static instance = new CourseService();
+
+    static getInstance() {
+        return this.instance;
+    }
+
     constructor() {
+        if (CourseService.instance) return CourseService.instance;
+        CourseService.instance = this;
     }
 
     async getCourses() {
@@ -53,4 +62,4 @@ class CourseService {
     }
 }
 
-module.exports = new CourseService();
+module.exports = CourseService.getInstance();

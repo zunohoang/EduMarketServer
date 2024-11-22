@@ -1,18 +1,28 @@
 const Accesskey = require('../models/accesskey.model');
-const courseService = require('./course.service');
 const userService = require('./user.service');
 
 class AccesskeyService {
 
-    async getAccesskeys() {
+    static instance = new AccesskeyService();
+
+    static getInstance() {
+        return this.instance;
+    }
+
+    constructor() {
+        if (AccesskeyService.instance) return AccesskeyService.instance;
+        AccesskeyService.instance = this;
+    }
+
+    async getAccessKeys() {
         return Accesskey.find().populate('createdBy');
     }
 
-    async getAccesskeyById(id) {
+    async getAccessKeyById(id) {
         return Accesskey.findById(id);
     }
 
-    async createAccesskey(data) {
+    async createAccessKey(data) {
         // random key kí tự viết hoa và số có độ dài 10 và không trùng với key đã có
         try {
             let key = "";
@@ -24,7 +34,7 @@ class AccesskeyService {
                     key += characters.charAt(Math.floor(Math.random() * characters.length));
                 }
                 console.log(key);
-            } while (await this.getAccesskeyByKey(key));
+            } while (await this.getAccessKeyByKey(key));
             console.log(data);
             data.key = data.platform + "_" + data.infix + key;
             console.log(data);
@@ -38,22 +48,22 @@ class AccesskeyService {
             console.log(data);
             data.status = false;
 
-            return Accesskey.create(data);
+            return await Accesskey.create(data);
         } catch (error) {
             console.log(error);
             return error;
         }
     }
 
-    async updateAccesskey(id, data) {
+    async updateAccessKey(id, data) {
         return Accesskey.findByIdAndUpdate(id, data, { new: true });
     }
 
-    async deleteAccesskey(id) {
+    async deleteAccessKey(id) {
         return Accesskey.findByIdAndDelete(id);
     }
 
-    async getAccesskeyByKey(key) {
+    async getAccessKeyByKey(key) {
         return Accesskey.findOne({ key }).populate({
             path: 'courses',
             populate: {
@@ -62,8 +72,8 @@ class AccesskeyService {
         });
     }
 
-    async activeAccesskey(_key, userId) {
-        const key = await this.getAccesskeyByKey(_key);
+    async activeAccessKey(_key, userId) {
+        const key = await this.getAccessKeyByKey(_key);
         // kiem tra con han
         if (key.expired < Date.now()) {
             return false;
@@ -81,4 +91,4 @@ class AccesskeyService {
 
 }
 
-module.exports = new AccesskeyService();
+module.exports = AccesskeyService.getInstance();

@@ -1,150 +1,99 @@
-const accessKeyService = require('../services/accesskey.service');
-const createMulter = require('../configs/multerConfig');
+const AccessKeyService = require('../services/accesskey.service');
+const createMulter = require('../configs/multer.config');
 const multer = createMulter('public/bills');
 const uploadBill = multer.single('file');
 
-class AccesskeyController {
+class AccessKeyController {
+    // signle pattern
+    static instance = new AccessKeyController();
 
-    async getAccesskeys(req, res) {
+    static getInstance() {
+        return this.instance;
+    }
+
+    constructor() {
+        if (AccessKeyController.instance) return AccessKeyController.instance;
+        AccessKeyController.instance = this;
+    }
+
+    async getAll(req, res) {
         try {
-            const accesskeys = await accessKeyService.getAccesskeys();
-            res.json({
-                status: true,
-                data: accesskeys
-            })
+            const accessKeys = await AccessKeyService.getAccessKeys();
+            res.json({ status: true, data: accessKeys });
         } catch (error) {
-            res.status(500).json({
-                status: false,
-                message: error.message
-            })
+            res.status(500).json({ status: false, message: error.message });
         }
     }
 
-    async createAccesskey(req, res) {
+    async getById(req, res) {
+        try {
+            const { id } = req.params;
+            const accessKey = await AccessKeyService.getAccessKeyById(id);
+            if (!accessKey) {
+                return res.status(404).json({ status: false, message: 'Access Key not found' });
+            }
+            res.json({ status: true, data: accessKey });
+        } catch (error) {
+            res.status(500).json({ status: false, message: error.message });
+        }
+    }
+
+    async create(req, res) {
         uploadBill(req, res, async (err) => {
             if (err) {
-                console.log(err)
-                res.status(500).json({
-                    status: false,
-                    message: err.message
-                })
-            } else {
-                console.log("dsds")
-                const accessKey = JSON.parse(req.body.accessKey);
-                if (req.file)
-                    accessKey.bill = req.file.path.replace('public', '');
-                try {
-                    const newAccesskey = await accessKeyService.createAccesskey(accessKey);
-                    console.log(newAccesskey);
-                    res.json({
-                        status: true,
-                        data: newAccesskey
-                    })
-                } catch (error) {
-                    console.log(error)
-                    res.status(500).json({
-                        status: false,
-                        message: error.message
-                    })
-                }
+                return res.status(500).json({ status: false, message: err.message });
             }
-        })
+            try {
+                const accessKeyData = JSON.parse(req.body.accessKey);
+                console.log(accessKeyData);
+                if (req.file) accessKeyData.bill = req.file.path.replace('public', '');
+
+                const newAccessKey = await AccessKeyService.createAccessKey(accessKeyData);
+                res.json({ status: true, data: newAccessKey });
+            } catch (error) {
+                res.status(500).json({ status: false, message: error.message });
+            }
+        });
     }
 
-    async getAccesskeyById(req, res) {
+    async update(req, res) {
         try {
-            const id = req.params.id;
-            const accesskey = await accessKeyService.getAccesskeyById(id);
-            if (!accesskey) {
-                res.status(404).json({
-                    status: false,
-                    message: "Khong tim thay key"
-                })
-            } else {
-                res.json({
-                    status: true,
-                    data: accesskey
-                })
+            const { id } = req.params;
+            const updatedAccessKey = await AccessKeyService.updateAccessKey(id, req.body);
+            if (!updatedAccessKey) {
+                return res.status(404).json({ status: false, message: 'Access Key not found' });
             }
+            res.json({ status: true, data: updatedAccessKey });
         } catch (error) {
-            res.status(500).json({
-                status: false,
-                message: error.message
-            })
+            res.status(500).json({ status: false, message: error.message });
         }
     }
 
-    async updateAccesskey(req, res) {
+    async delete(req, res) {
         try {
-            const id = req.params.id;
-            const data = req.body;
-            const accesskey = await accessKeyService.updateAccesskey(id, data);
-            if (!accesskey) {
-                res.status(404).json({
-                    status: false,
-                    message: "Khong tim thay key"
-                })
-            } else {
-                res.json({
-                    status: true,
-                    data: accesskey
-                })
+            const { id } = req.params;
+            const deletedAccessKey = await AccessKeyService.deleteAccessKey(id);
+            if (!deletedAccessKey) {
+                return res.status(404).json({ status: false, message: 'Access Key not found' });
             }
+            res.json({ status: true, message: 'Deleted successfully' });
         } catch (error) {
-            res.status(500).json({
-                status: false,
-                message: error.message
-            })
+            res.status(500).json({ status: false, message: error.message });
         }
     }
 
-    async deleteAccesskey(req, res) {
-        try {
-            const id = req.params.id;
-            const accesskey = await accessKeyService.deleteAccesskey(id);
-            if (!accesskey) {
-                res.status(404).json({
-                    status: false,
-                    message: "Khong tim thay key"
-                })
-            } else {
-                res.json({
-                    status: true,
-                    data: accesskey
-                })
-            }
-        } catch (error) {
-            res.status(500).json({
-                status: false,
-                message: error.message
-            })
-        }
-    }
-
-    async activeAccesskey(req, res) {
+    async activate(req, res) {
         try {
             const { key, userId } = req.body;
-            const result = await accessKeyService.activeAccesskey(key, userId);
-            if (result) {
-                res.json({
-                    status: true,
-                    message: "Kich hoat thanh cong",
-                    key: result
-                })
-            } else {
-                res.status(500).json({
-                    status: false,
-                    message: "Khoa hoc da het han hoac da duoc su dung"
-                })
+            const result = await AccessKeyService.activeAccessKey(key, userId);
+            if (!result) {
+                return res.status(400).json({ status: false, message: 'Access Key expired or already used' });
             }
+            res.json({ status: true, message: 'Activated successfully', data: result });
         } catch (error) {
-            res.status(500).json({
-                status: false,
-                message: error.message
-            })
+            res.status(500).json({ status: false, message: error.message });
         }
     }
-
 }
 
-module.exports = new AccesskeyController();
+module.exports = AccessKeyController.getInstance();

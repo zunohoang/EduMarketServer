@@ -2,7 +2,16 @@ const User = require("../models/user.model");
 const Course = require("../models/course.model");
 
 class UserService {
+
+    static instance = new UserService();
+
+    static getInstance() {
+        return this.instance;
+    }
+
     constructor() {
+        if (UserService.instance) return UserService.instance;
+        UserService.instance = this;
         this.User = User;
         this.Course = Course;
     }
@@ -95,4 +104,4 @@ class UserService {
     }
 }
 
-module.exports = new UserService();
+module.exports = UserService.getInstance();
