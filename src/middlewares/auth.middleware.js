@@ -28,7 +28,7 @@ class Auth {
 
             const user = await User.findOne({ username: user_token.username });
 
-            logger(this, `User ${user.username} is accessing`);
+            logger(this, `User ${user.username} is accessing - ROLE: ${user.role}`);
 
             if (requiredAttributes.some(attr => user.role.includes(attr))) {
                 req.user = user;

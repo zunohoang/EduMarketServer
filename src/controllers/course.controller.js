@@ -1,11 +1,22 @@
 const courseService = require('../services/course.service');
 const Course = require('../models/course.model');
-const createMulter = require('../configs/multerConfig');
+const createMulter = require('../configs/multer.config');
 const multer = createMulter('public/courses');
 const uploadCourse = multer.single('file');
 const User = require('../models/user.model');
 const redisService = require('../services/redis.service');
 class CourseController {
+
+    static instance = new CourseController();
+
+    static getInstance() {
+        return this.instance;
+    }
+
+    constructor() {
+        if (CourseController.instance) return CourseController.instance;
+        CourseController.instance = this;
+    }
 
     async getCourses(req, res) {
         try {
@@ -376,4 +387,4 @@ class CourseController {
     }
 }
 
-module.exports = new CourseController();
+module.exports = CourseController.getInstance();

@@ -4,6 +4,18 @@ const JWT_SECRET = 'secretdvdsvds-wf9ef09--90i90u';
 
 // no co accesstoken and refreshtoken
 class JwtService {
+
+    static instance = new JwtService();
+
+    static getInstance() {
+        return this.instance;
+    }
+
+    constructor() {
+        if (JwtService.instance) return JwtService.instance;
+        JwtService.instance = this;
+    }
+
     // gen accestoken
     genAccessToken(payload) {
         return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
@@ -34,4 +46,4 @@ class JwtService {
     }
 }
 
-module.exports = new JwtService();
+module.exports = JwtService.getInstance();

@@ -1,6 +1,6 @@
 const userService = require("../services/user.service");
 const UserService = require("../services/user.service");
-const createMulter = require('../configs/multerConfig');
+const createMulter = require('../configs/multer.config');
 const multer = createMulter('public/teachers');
 const uploadCourse = multer.single('file');
 const jwtService = require('../services/jwt.service');
@@ -8,12 +8,20 @@ const redisService = require('../services/redis.service');
 
 class UserController {
 
+    static instance = new UserController();
+
+    static getInstance() {
+        return this.instance;
+    }
+
+    constructor() {
+        if (UserController.instance) return UserController.instance;
+        UserController.instance = this;
+    }
+
     async createUser(req, res) {
         try {
-            let { username, name, image, phone, address, born, email, password, role } = req.body;
-            if (!role) {
-                role = "STUDENT";
-            }
+            let { username, name, image, phone, address, born, email, password, role = "STUDENT" } = req.body;
             const user = await UserService.createUser({ username, fullName: name, image, phone, address, born, email, password, role });
             if (user) {
                 res.status(201).json({ status: true, message: 'User created successfully' });
@@ -244,4 +252,4 @@ class UserController {
     }
 }
 
-module.exports = new UserController();
+module.exports = UserController.getInstance();

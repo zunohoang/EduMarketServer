@@ -48,7 +48,7 @@ class AuthController {
 
 
         } catch (e) {
-            res.status(500).json({ status: false, message: e.message });
+            res.status(501).json({ status: false, message: e.message });
         }
     }
 
