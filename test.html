@@ -1,0 +1,122 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Realtime Chat với Socket.io và Phòng Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #messages {
+            list-style-type: none;
+            padding: 0;
+            max-height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        #messages li {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #form {
+            display: none;
+            flex: 1;
+        }
+
+        #input {
+            flex: 1;
+            padding: 8px;
+        }
+
+        #send {
+            padding: 8px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Realtime Chat với Phòng Chat</h1>
+    <div>
+        <input type="text" id="roomInput" placeholder="Nhập tên phòng" />
+        <button class="btn" onclick="joinRoom()">Tham gia Phòng</button>
+        <button class="btn" onclick="leaveRoom()">Rời Phòng</button>
+    </div>
+    <ul id="messages"></ul>
+    <form id="form" onsubmit="sendMessage(); return false;">
+        <input id="input" autocomplete="off" placeholder="Nhập tin nhắn..." /><button class="btn">Gửi</button>
+    </form>
+
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:5000');
+        let currentRoom = '';
+
+        socket.on('connect', () => {
+            console.log('Đã kết nối với máy chủ');
+        });
+
+        socket.on('notification', (msg) => {
+            addMessage(`Notification: ${msg}`);
+        });
+
+        socket.on('joined_room', (room) => {
+            addMessage(`Bạn đã tham gia phòng: ${room}`);
+        });
+
+        socket.on('left_room', (room) => {
+            addMessage(`Bạn đã rời phòng: ${room}`);
+        });
+
+        socket.on('chat_message', (data) => {
+            addMessage(`${data.user}: ${data.message}`);
+        });
+
+        function joinRoom() {
+            const room = document.getElementById('roomInput').value.trim();
+            if (room) {
+                socket.emit('join_room', room);
+                currentRoom = room;
+                document.getElementById('form').style.display = 'flex';
+                addMessage(`Đang tham gia phòng: ${room}`);
+            }
+        }
+
+        function leaveRoom() {
+            if (currentRoom) {
+                socket.emit('leave_room', currentRoom);
+                addMessage(`Đang rời phòng: ${currentRoom}`);
+                currentRoom = '';
+                document.getElementById('form').style.display = 'none';
+            }
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('input').value.trim();
+            if (message && currentRoom) {
+                socket.emit('chat_message', { room: currentRoom, message });
+                addMessage(`Bạn: ${message}`);
+                document.getElementById('input').value = '';
+            }
+        }
+
+        function addMessage(msg) {
+            const item = document.createElement('li');
+            item.textContent = msg;
+            document.getElementById('messages').appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+    </script>
+</body>
+
+</html>
