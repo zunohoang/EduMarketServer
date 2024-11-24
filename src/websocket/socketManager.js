@@ -78,9 +78,11 @@ class SocketManager {
                     console.log("ADMIN send: " + newChat);
                     // this.io.to(this.usernameToSocketId[message.receiver]).emit('chat_message', newChat);
 
-                    this.usernameToSocketId[message.receiver].forEach(userSocket => {
-                        this.io.to(userSocket).emit('chat_message', newChat);
-                    });
+                    if (this.usernameToSocketId[message.receiver]) {
+                        this.usernameToSocketId[message.receiver].forEach(userSocket => {
+                            this.io.to(userSocket).emit('chat_message', newChat);
+                        });
+                    }
 
 
                     this.adminSocketId.forEach(admin => {
