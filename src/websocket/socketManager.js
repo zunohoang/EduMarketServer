@@ -10,7 +10,7 @@ class SocketManager {
         this.jwtService = jwtService;
         this.userService = userService
         this.usernameToSocketId = new Map();
-        this.adminSocketId = new Map();
+        this.adminSocketId = [];
 
         this.setupConnection();
     }
@@ -46,9 +46,12 @@ class SocketManager {
             console.log(`Người dùng ${socket.id} (${socket.user.username}) đã kết nối`);
 
             if (["ADMIN", "TEACHER", "COLLABORATOR"].includes(socket.user.role)) {
-                this.adminSocketId[socket.user.username] = socket.id;
+                this.adminSocketId.push(socket.id);
             } else {
-                this.usernameToSocketId[socket.user.username] = socket.id; // luu anh xa
+                if (!this.usernameToSocketId[socket.user.username]) {
+                    this.usernameToSocketId[socket.user.username] = [];
+                }
+                this.usernameToSocketId[socket.user.username].push(socket.id); // luu anh xa
             }
 
             // Gửi tin nhắn đến phòng cụ thể
@@ -65,15 +68,24 @@ class SocketManager {
 
                     const newChat = await chatService.createChat({
                         content: message.content,
-                        sender: socket.user.username,
+                        sender: {
+                            username: socket.user.username,
+                            role: socket.user.role
+                        },
                         receiver: message.receiver
                     });
 
                     console.log("ADMIN send: " + newChat);
-                    this.io.to(this.usernameToSocketId[message.receiver]).emit('chat_message', newChat);
-                    for (const admin in this.adminSocketId) {
-                        this.io.to(this.adminSocketId[admin]).emit('chat_message', newChat);
-                    }
+                    // this.io.to(this.usernameToSocketId[message.receiver]).emit('chat_message', newChat);
+
+                    this.usernameToSocketId[message.receiver].forEach(userSocket => {
+                        this.io.to(userSocket).emit('chat_message', newChat);
+                    });
+
+
+                    this.adminSocketId.forEach(admin => {
+                        this.io.to(admin).emit('chat_message', newChat);
+                    });
                     return;
                 }
 
@@ -81,25 +93,37 @@ class SocketManager {
                 message.sender = socket.user.username;
                 const newChat = await chatService.createChat({
                     content: message.content,
-                    sender: message.sender,
+                    sender: {
+                        username: socket.user.username,
+                        role: socket.user.role
+                    },
                     receiver: message.receiver
                 });
                 // console.log(newChat);
 
-                this.io.to(this.usernameToSocketId[socket.user.username]).emit('chat_message', newChat);
+                // this.io.to(this.usernameToSocketId[socket.user.username]).emit('chat_message', newChat);
 
-                for (const admin in this.adminSocketId) {
-                    this.io.to(this.adminSocketId[admin]).emit('chat_message', newChat);
-                }
+                this.usernameToSocketId[socket.user.username].forEach(userSocket => {
+                    this.io.to(userSocket).emit('chat_message', newChat);
+                });
 
+                this.adminSocketId.forEach(admin => {
+                    this.io.to(admin).emit('chat_message', newChat);
+                });
             });
 
             // Xử lý ngắt kết nối
             socket.on('disconnect', () => {
                 console.log(`Người dùng ${socket.id} đã ngắt kết nối`);
-                if (socket.user.role == "STUDENT") delete this.usernameToSocketId[socket.user.username];
-                if (socket.user.role != "STUDENT") delete this.adminSocketId[socket.user.username];
-                this.socketService.removeSocketFromAllRooms(socket);
+                if (socket.user.role == "STUDENT") {
+                    const userSockets = this.usernameToSocketId[socket.user.username];
+                    userSockets.splice(userSockets.indexOf(socket.id), 1);
+                    if (userSockets.length === 0) {
+                        delete this.usernameToSocketId[socket.user.username];
+                    }
+                } else {
+                    this.adminSocketId.splice(this.adminSocketId.indexOf(socket.id), 1);
+                }
             });
         });
     }
